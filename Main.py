@@ -7,7 +7,11 @@ import traceback
 from threading import *
 from Packets.Factory import *
 from Logic.Device import Device
+from colorama import init, Fore
 
+PORT = 9339
+
+init(True)
 
 class ServerThread():
     def __init__(self, ip, port):
@@ -18,13 +22,13 @@ class ServerThread():
     def start(self):
         self.client.bind((self.address, self.port))
 
-        print(f'Server is listening on {self.address}:{self.port}'.format(self.address, self.port))
+        print(Fore.YELLOW + "[!] Server is listening on " + str(self.address) + str(self.port) + "\n")
 
         while True:
             self.client.listen(5)
             client, address = self.client.accept()
 
-            print('New connection from {}'.format(address[0]))
+            print(Fore.CYAN + "[*] New connection from [" + str(address[0]) + "] --> " + Fore.GREEN + "Starting new thread...")
             clientThread = ClientThread(client).start()
 
 
@@ -50,35 +54,36 @@ class ClientThread(Thread):
     def run(self):
         while True:
             header   = self.client.recv(7)
-            packetid = int.from_bytes(header[:2], 'big')
+            packetID = int.from_bytes(header[:2], 'big')
             length   = int.from_bytes(header[2:5], 'big')
             version  = int.from_bytes(header[5:], 'big')
             data     = self.recvall(length)
 
             if len(header) >= 7:
                 if length == len(data):
-                    print('[*] {} received'.format(packetid))
+                    print(Fore.MAGENTA + "[&] Received Packet ID [" + str(packetID) + "] --> [HANDLING]")
 
                     try:
                         decrypted = self.device.decrypt(data)
-                        if packetid in availablePackets:
+                        if packetID in availablePackets:
 
-                            Message = availablePackets[packetid](decrypted, self.device)
+                            Message = availablePackets[packetID](decrypted, self.device)
 
                             Message.decode()
                             Message.process()
 
                         else:
-                            print('[*] {} not handled'.format(packetid))
+                            print(Fore.RED + "[&] Received Packet ID [" + str(packetID) + "] --> [NOT HANDLING]")
 
                     except:
-                            print('[*] Error while decrypting / handling {}'.format(packetid))
+                            print(Fore.YELLOW + "[&] Received Packet ID [" + str(packetID) + "] --> [ERROR HANDLING]")
                             traceback.print_exc()
                 else:
-                    print('[*] Incorrect Length for packet {} (header length: {}, data length: {})'.format(packetid, length, len(data)))
+                    print(Fore.YELLOW + "[&] Incorrect Length for Packet ID [" + str(packetID) + "] [Length: " + str(len(data)) + "] [\"" + data + "\"]")
             else:
-                print('[*] Received an invalid packet from client')
+                print(Fore.YELLOW + "[&] Received an invalid packet")
                 self.client.close()
+
 if __name__ == '__main__':
-	server = ServerThread("0.0.0.0", 9339)
+	server = ServerThread("0.0.0.0", PORT)
 	server.start()
