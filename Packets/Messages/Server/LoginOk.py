@@ -1,7 +1,9 @@
 import time
 
 from Utils.Writer import Writer
+from colorama import init, Fore
 
+init(True)
 
 class LoginOk(Writer):
     def __init__(self, device, player):
@@ -32,4 +34,4 @@ class LoginOk(Writer):
         self.writeInt(0)
         
         self.writeString()       
-        print("[DEBUG] Message LoginOk has been sent.")
+        print(Fore.GREEN + "\n[LOGIN] Login accepted, LoginOk has been sent\n")

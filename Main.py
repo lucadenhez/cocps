@@ -20,15 +20,22 @@ class ServerThread():
         self.client = socket.socket()
 
     def start(self):
+        print(Fore.GREEN + """   ________           __       ____  _____
+  / ____/ /___ ______/ /_     / __ \/ ___/
+ / /   / / __ `/ ___/ __ \   / /_/ /\__ \ 
+/ /___/ / /_/ (__  ) / / /  / ____/___/ / 
+\____/_/\__,_/____/_/ /_/  /_/    /____/  
+                                          """)
+
         self.client.bind((self.address, self.port))
 
-        print(Fore.YELLOW + "[!] Server is listening on " + str(self.address) + str(self.port) + "\n")
+        print(Fore.MAGENTA + "[!] Server is listening on port [" + str(self.port) + "]\n")
 
         while True:
             self.client.listen(5)
             client, address = self.client.accept()
 
-            print(Fore.CYAN + "[*] New connection from [" + str(address[0]) + "] --> " + Fore.GREEN + "Starting new thread...")
+            print(Fore.CYAN + "[*] New connection from [" + str(address[0]) + "] --> " + Fore.GREEN + "Starting new thread...\n")
             clientThread = ClientThread(client).start()
 
 
@@ -61,12 +68,10 @@ class ClientThread(Thread):
 
             if len(header) >= 7:
                 if length == len(data):
-                    print(Fore.MAGENTA + "[&] Received Packet ID [" + str(packetID) + "] --> [HANDLING]")
-
                     try:
                         decrypted = self.device.decrypt(data)
                         if packetID in availablePackets:
-
+                            print(Fore.MAGENTA + "[&] Received Packet ID [" + str(packetID) + "] [\"" + availablePackets[packetID] + "\"] --> [HANDLING]")
                             Message = availablePackets[packetID](decrypted, self.device)
 
                             Message.decode()

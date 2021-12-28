@@ -3,7 +3,9 @@ import traceback
 
 from CryptoRC4.Crypto import CryptoRc4
 from Packets.Factory import *
+from colorama import init, Fore
 
+init(True)
 
 class Device:
 
@@ -36,7 +38,7 @@ class Device:
         else:
             self.socket.send(packetID + len(encrypted).to_bytes(3, 'big') + packetVersion + encrypted)
 
-        print('[*] {} sent'.format(ID))
+        print(Fore.GREEN + "[^] Responded to Packet ID [" + str(ID) + "]")
 
     def decrypt(self, data):
         return self.crypto.decrypt(data)
